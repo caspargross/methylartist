@@ -18,6 +18,7 @@ setup(
         'pysam',
         'numpy',
         'scipy',
+        'h5py',
         'pandas',
         'matplotlib',
         'seaborn',
