@@ -451,8 +451,8 @@ def get_phased_reads(fn, chrom, start, end, min_mapq=10, tag_untagged=False, ign
             if None not in (HP, PS):
                 phase = str(PS) + ':' + str(HP)
 
-                if HP_only:
-                    phase = str(HP)
+            if HP_only:
+                phase = str(HP)
 
             reads[read.query_name] = phase
 
@@ -2586,6 +2586,7 @@ def locus(args):
 
             if args.phased:
                 for phase in phases[bam]:
+
                     bamname = '.'.join(os.path.basename(bam).split('.')[:-1]) + '.' + phase + '.' + mod
                     orig_bam[bamname] = bam
                     reads[bamname] = get_meth_locus(args, bam, meth_dbs, mod, phase=phase, methbam=methbam, HP_only=args.ignore_ps, restrict_motif=args.motif, restrict_ref=args.ref)
@@ -2795,12 +2796,11 @@ def locus(args):
     if args.color_by_hp:
         if args.phased:
             hp_color = {}
-            for hp in ('1','2'):
-                hp_color[hp] = sns.color_palette(args.samplepalette, n_colors=2)[int(hp)-1]
+            for hp in phases[bam]:
+                hp_color[hp] = sns.color_palette(args.samplepalette, n_colors=len(phases[bam]))[phases[bam].index(hp)]
             
             for sample in sample_color:
                 hp = sample.split('.')[-2]
-                assert hp in ('1','2')
                 sample_color[sample] = hp_color[hp]
 
         else:
@@ -3156,8 +3156,14 @@ def locus(args):
     else:
         ax0.set_xticklabels(xt_labels)
 
-    # llr plot
+    # Hide all reads not phase 1,2 in llr and smoothed meth plots
+    if not args.plot_unphased:
+        print("Removing None phased reads from meth plots")
+        meth_table = meth_table[meth_table['sample'].str.split('.').str[-2].str.match('1|2')]
+        sample_order = [x for x in sample_order if x.split('.')[-2] in ('1', '2')]
 
+
+    # llr plot
     logger.info('building llr plot...')
     ax4 = plt.subplot(gs[3])
     ax4.set_xticks([])
@@ -3720,7 +3726,6 @@ def region(args):
             
             for sample in sample_color:
                 hp = sample.split('.')[-1]
-                assert hp in ('1','2')
                 sample_color[sample] = hp_color[hp]
 
         else:
@@ -4657,6 +4662,7 @@ if __name__ == '__main__':
     parser_locus.add_argument('--modspace', default=None, help='spacing between links in top panel (default=auto)')
     parser_locus.add_argument('--genes', default=None, help='genes of interest (comma delimited)')
     parser_locus.add_argument('--labelgenes', default=False, action='store_true', help='plot gene names')
+    parser_locus.add_argument('--plot_unphased', default=False, action='store_true', help='Add meth plot for unphased reads')
     parser_locus.add_argument('--methcall_ymax', default=None)
     parser_locus.add_argument('--methcall_xmin', default=None)
     parser_locus.add_argument('--methcall_xmax', default=None)
