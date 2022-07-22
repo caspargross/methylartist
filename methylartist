@@ -2529,6 +2529,9 @@ def locus(args):
         if args.bams.endswith('.bam') and (',' in args.bams and args.bams.split(',')[0].endswith('.bam')):
             bams = args.bams.split(',')
 
+        if args.bams.endswith('.bam'):
+            bams = [args.bams]
+
         else:
             logger.info('assuming %s contains a list of .bams' % args.bams)
             with open(args.bams) as bam_list:
