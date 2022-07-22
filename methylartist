@@ -568,7 +568,7 @@ def split_ml(mod_strings, ml):
 
     total_ms = sum([len(ms.split(',')[1:]) for ms in mod_strings])
 
-    assert total_ms == len(ml), 'mod bam formatting error'
+    #assert total_ms == len(ml), 'mod bam formatting error'
 
     i = 0
     for mod_string in mod_strings:
@@ -1577,7 +1577,7 @@ def db_guppy(args):
 
             commit_interval = 100000
 
-            for i, read in enumerate(bam.fetch(), 1):
+            for i, read in enumerate(bam.fetch(), 1):   
                 if read.is_secondary or read.is_supplementary or read.is_duplicate:
                     continue
 
@@ -2526,7 +2526,7 @@ def locus(args):
         methbam = True
         bams = []
 
-        if args.bams.endswith('.bam') or (':' in args.bams and args.bams.split(':')[0].endswith('.bam')):
+        if args.bams.endswith('.bam') and (',' in args.bams and args.bams.split(',')[0].endswith('.bam')):
             bams = args.bams.split(',')
 
         else:
