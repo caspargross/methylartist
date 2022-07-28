@@ -2526,10 +2526,10 @@ def locus(args):
         methbam = True
         bams = []
 
-        if args.bams.endswith('.bam') and (',' in args.bams and args.bams.split(',')[0].endswith('.bam')):
+        if args.bams.endswith('.bam') and ',' in args.bams and args.bams.split(',')[0].endswith('.bam'):
             bams = args.bams.split(',')
 
-        if args.bams.endswith('.bam'):
+        elif args.bams.endswith('.bam'):
             bams = [args.bams]
 
         else:
@@ -2789,8 +2789,14 @@ def locus(args):
         gs = gridspec.GridSpec(5,1,height_ratios=p_ratios, hspace=0)
 
     sample_color = {}
+
+    # Order Samples by haplotype
+    sample_order = sorted(sample_order)
     for i, sample in enumerate(sample_order):
-        sample_color[sample] = sns.color_palette(args.samplepalette, n_colors=len(sample_order))[i]
+        if sample.split('.')[-2] in ('1','2'):
+            sample_color[sample] = sns.color_palette("Paired", n_colors=len(bams)*2)[2*(i//3)+(i%3)]
+        else:
+            sample_color[sample] = tuple([max(x-0.2,0) for x in list(sns.color_palette("Paired", n_colors=len(bams)*2)[2*((i-1)//3)+((i-1)%3)])])
 
     for sample in sample_color:
         if orig_bam[sample] in user_colours:
@@ -2799,16 +2805,18 @@ def locus(args):
     if args.color_by_hp:
         if args.phased:
             hp_color = {}
-            for hp in phases[bam]:
-                hp_color[hp] = sns.color_palette(args.samplepalette, n_colors=len(phases[bam]))[phases[bam].index(hp)]
-            
+
+            for bam in bams:                          
+                hp_color['1'] = sns.color_palette("Paired", n_colors=len(phases)*2)[(2*(bams.index(bam)))]
+                hp_color['2'] = sns.color_palette("Paired", n_colors=len(phases)*2)[(2*(bams.index(bam)))+1]
+                hp_color['None'] = tuple([max(x-0.2,0) for x in list(sns.color_palette("Paired", n_colors=len(phases)*2)[(2*(bams.index(bam)))])])
+
             for sample in sample_color:
                 hp = sample.split('.')[-2]
                 sample_color[sample] = hp_color[hp]
 
         else:
             logger.warning('--color_by_hp has no effect without --phase')
-
 
     # plot genes
 
